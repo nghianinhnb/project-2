@@ -41,6 +41,13 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'accounts',
+    'complaints',
+    'news',
+    'notifications',
+    'subjects',
+    'transactions',
+    'tuition_collection',
+    'tuition_debt'
 ]
 
 REST_FRAMEWORK = {

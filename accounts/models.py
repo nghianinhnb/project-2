@@ -5,25 +5,25 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 # Create your models here.
 class UserManager(BaseUserManager):
-    def create_user(self, full_name, username, email, password=None):
-        if not username:
-            raise ValueError('User must have username')
+    def create_user(self, full_name, user_code, email, password=None):
+        if not user_code:
+            raise ValueError('User must have user_code')
 
         user = self.model(
             email = self.normalize_email(email),
-            username = username,
             full_name = full_name,
+            user_code = user_code,
         )
         user.set_password(password)
         user.save(using=self._db)
 
         return user
 
-    def create_superuser(self, full_name, username, email, password=None):
+    def create_superuser(self, full_name, user_code, email, password=None):
         user = self.create_user(
-            full_name = full_name,
-            username = username,
             email = email,
+            full_name = full_name,
+            user_code = user_code,
             password = password
         )
         user.is_staff = True
@@ -38,11 +38,11 @@ class User(AbstractBaseUser):
     user_code = CharField(max_length=10, unique=True)
     email = CharField(max_length=50, unique=True)
     full_name = CharField(max_length=50)
-    dob = DateField(null=True, blank=True, validators=[MinValueValidator(limit_value=timezone.now())])
+    dob = DateField(null=True, blank=True, validators=[MaxValueValidator(limit_value=timezone.now())])
     citizen_id = CharField(max_length=12, null=True)
     phone = CharField(max_length=20, null=True)
-    school_year = IntegerField(default=timezone.now().year, validators=[MinValueValidator(1950)], null=False, blank=False)
-    current_tuition_debt = DecimalField(max_digits=14, decimal_places=4, default=0, null=False)
+    school_year = PositiveSmallIntegerField(null=True)
+    current_tuition_debt = DecimalField(max_digits=14, decimal_places=4, default=0)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('full_name', 'user_code')
