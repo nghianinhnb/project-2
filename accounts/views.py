@@ -1,49 +1,45 @@
-from django.contrib import auth
-from django.http import HttpRequest
-from django.shortcuts import redirect
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework import permissions, viewsets, status
+from rest_framework.views import APIView
+from django.contrib.auth import login, logout
+from .models import User
+from .serializers import UserSerializer, UserRegistrationSerializer, UserLoginSerializer
 
-from .models import *
-from .serializers import *
+class UserRegistrationView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserRegistrationSerializer
+    permission_classes = (permissions.AllowAny,)
 
+class UserLoginView(APIView):
+    serializer_class = UserLoginSerializer
+    permission_classes = (permissions.AllowAny,)
 
-class UserViewSet(viewsets.ModelViewSet):
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data
+        login(request, user)
+        return Response(UserSerializer(user).data)
+
+class UserLogoutView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        logout(request)
+        return Response(status=status.HTTP_200_OK)
+
+class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAdminUser,)
 
+    def get_permissions(self):
+        if self.request.method == 'GET' or self.request.method == 'PUT' or self.request.method == 'PATCH':
+            # Allow read and update for the owner
+            self.permission_classes = [permissions.IsAuthenticated | IsOwner]
+        return super(UserDetailView, self).get_permissions()
 
-class MeViewSet(viewsets.GenericViewSet):
-
-    @action(detail=False, methods=['GET', 'PUT'], permission_classes=(permissions.IsAuthenticated,))
-    def me(self, request: HttpRequest):
-        if request.method == 'GET':
-            user = UserSerializer(request.user).data
-            return Response({'user': user})
-        else:
-            serializer = self.get_serializer(instance=request.user, data=request.data, partial=True)
-            if not serializer.is_valid():
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            serializer.save()
-            return Response({'user': serializer.data})
-
-    @action(detail=False, methods=['POST'], serializer_class=UserSerializer)
-    def login(self, request: HttpRequest):
-        if request.user.is_authenticated: return Response()
-
-        user = auth.authenticate(
-            email=request.POST.get('email'),
-            password=request.POST.get('password')
-        )
-
-        if user is None: return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        auth.login(request, user)
-        return Response({'user': user})
-
-    @action(detail=False, methods=['GET'], serializer_class=UserSerializer)
-    def logout(self, request: HttpRequest):
-        auth.logout(request)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+class IsOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        # Allow read and update for the owner
+        return request.user == obj

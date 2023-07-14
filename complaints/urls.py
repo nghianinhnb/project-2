@@ -3,9 +3,9 @@ from rest_framework import routers
 from .views import ComplaintViewSet
 
 
-router = routers.DefaultRouter()
+router = routers.DefaultRouter(trailing_slash=False)
 
-router.register(r'complaint', ComplaintViewSet)
+router.register(r'complaints', ComplaintViewSet)
 
 urlpatterns = [
     path('api/v1/', include(router.urls)),

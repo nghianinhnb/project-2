@@ -1,0 +1,21 @@
+# Ignore development and test files
+*.pyc
+*.pyo
+__pycache__
+*.sqlite3
+
+# Ignore static files
+staticfiles
+static
+
+# Ignore media files
+media
+
+# Ignore Docker-specific files
+Dockerfile.dev
+.dockerignore
+
+# Ignore editor and OS-specific files
+.git
+.gitignore
+.DS_Store

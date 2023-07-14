@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 
 from accounts.models import User
 from tuition_debt.models import TuitionDebt
+from complaints.models import Complaint
 
 # Create your models here.
 class Notification(Model):
@@ -21,6 +22,16 @@ def create_notification(sender, instance, created, **kwargs):
     if created:
         Notification.objects.create(
             user=instance.user,
-            title="Tuition Debt",
-            content=f"Học phí kỳ này của bạn là: {instance.ammount}"
+            title="Học phí",
+            content=f"Học phí kỳ này của bạn là: {instance.amount}"
+        )
+
+
+@receiver(post_save, sender=Complaint)
+def create_notification(sender, instance, created, **kwargs):
+    if not created and instance.response:
+        Notification.objects.create(
+            user=instance.sender,
+            title="Quản trị viên đã giải đáp thắc mắc của bạn",
+            content=f'Quản trị viên đã giải đáp thắc mắc của bạn'
         )

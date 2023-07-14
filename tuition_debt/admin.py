@@ -4,7 +4,7 @@ from .models import TuitionDebt
 
 # Register your models here.
 class TuitionDebtAdmin(admin.ModelAdmin):
-    list_display = ('user', 'ammount')
+    list_display = ('user', 'amount')
     list_display_links = ('user',)
     ordering = ()
     filter_horizontal = ()

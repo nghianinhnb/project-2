@@ -3,8 +3,8 @@ from rest_framework import routers
 from .views import NotificationViewSet
 
 
-router = routers.DefaultRouter()
-router.register(r'notification', NotificationViewSet)
+router = routers.DefaultRouter(trailing_slash=False)
+router.register(r'notifications', NotificationViewSet, basename='notifications')
 
 urlpatterns = [
     path('api/v1/', include(router.urls)),

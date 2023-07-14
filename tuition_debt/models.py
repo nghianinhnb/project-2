@@ -11,7 +11,7 @@ class TuitionDebt(Model):
     tuition_debt_id = BigAutoField(primary_key=True)
     tuition_collection = ForeignKey(TuitionCollection, on_delete=SET_NULL, null=True)
     user = ForeignKey(User, on_delete=CASCADE)
-    ammount = DecimalField(max_digits=14, decimal_places=4, default=0, null=False)
+    amount = DecimalField(max_digits=14, decimal_places=4, default=0, null=False)
 
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
@@ -22,12 +22,9 @@ def create_tuition_debt(sender, instance, created, **kwargs):
     if created:
         tuition_fees = instance.calculate_tuition_fee()
 
-        tuition_debts = []
         for user, amount in tuition_fees.items():
-            tuition_debts.append(TuitionDebt(
+            TuitionDebt.objects.create(
                 tuition_collection=instance,
                 user=user,
                 amount=amount
-            ))
-
-        TuitionDebt.objects.bulk_create(tuition_debts)
+            )
